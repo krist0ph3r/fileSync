@@ -5,6 +5,12 @@ import os
 rootDir = sys.argv[1]
 allfiles = {}
 
+def addfile(file):
+    if file[1] in allfiles:
+        allfiles[file[1]].append(file[0])
+    else:
+        allfiles[file[1]] = [file[0]]
+
 for dirName, subdirList, fileList in os.walk(rootDir):
     #print('Found directory: %s' % dirName)
     for fname in fileList:
@@ -17,10 +23,5 @@ for dirName, subdirList, fileList in os.walk(rootDir):
         del subdirList[0]
 
 for file in allfiles:
-    print(file)
+    print(file,allfiles[file])
 
-def addfile(file):
-    if file[1] in allfiles:
-        allfiles[file[1]].append(file[0])
-    else:
-        allfiles[file[1]] = [file[0]]
