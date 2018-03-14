@@ -1,12 +1,28 @@
 #!/usr/bin/python
 import sys
 import os
+import hashlib
+from pathlib import Path
 
-def addfile(file):
-    if file[1] in allfiles:
-        allfiles[file[1]].append(file[0])
+
+def addhashcode(size):
+    if unique in allfiles[size]:
+        filename = allfiles[size][unique]
+        m.update(Path(filename[0]).read_bytes())
+        allfiles[size].pop(unique)
+        hash = m.hexdigest()
+        if hash in allfiles[size]:
+            allfiles[size][hash].append(filename[0])
+        else:
+            allfiles[size][hash] = filename
+
+def addfile(filename, size):
+    if size in allfiles:
+        addhashcode(size)
+        allfiles[size][unique] = [filename]
+        addhashcode(size)
     else:
-        allfiles[file[1]] = [file[0]]
+        allfiles[size] = {unique,[filename]}
 
 def scanfiles(dir):
     for dirName, subdirList, fileList in os.walk(dir):
@@ -19,8 +35,10 @@ def scanfiles(dir):
             #for subdir in subdirList:
             #    print('%s/%s' % (dirName , subdir))
 
+m = hashlib.md5()
 rootDir = sys.argv[1]
 allfiles = {}
+unique = 'unique'
 scanfiles(rootDir)
 
 for file in allfiles:
