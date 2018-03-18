@@ -2,16 +2,20 @@
 import sys
 import os
 import hashlib
+import argparse
 from pathlib import Path
 
 
 def addhashcode(size):
     if unique in allfiles[size]:
         filename = allfiles[size][unique]
-        m = hashlib.md5()
-        m.update(Path(filename[0]).read_bytes())
+        content = Path(filename[0]).read_bytes()
+        md5 = hashlib.md5()
+        sha = hashlib.sha224()
+        md5.update(content)
+        sha.update(content)
         allfiles[size].pop(unique)
-        hash = m.hexdigest()
+        hash = md5.hexdigest() + "_" + sha.hexdigest()
         if hash in allfiles[size]:
             allfiles[size][hash].append(filename[0])
         else:
@@ -33,11 +37,30 @@ def scanfiles(dir):
             size = os.path.getsize(fullpath)
             addfile(fullpath,size)
 
-rootDir = sys.argv[1]
+def presentresults(args):
+    for size in allfiles:
+        for hash in allfiles[size]:
+            if len(allfiles[size][hash]) > 1:
+                if args.duplicate: print('%s: %s' % (duplicate, ','.join(allfiles[size][hash])))
+            else:
+                if args.unique: print('%s: %s' % (unique, ','.join(allfiles[size][hash])))
+    if args.map:
+        for file in allfiles:
+            print(file,allfiles[file])
+
+
+parser = argparse.ArgumentParser(description='Scan directories for duplicates and unique files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('-m', '--map', dest='map', default=False, action='store_true', help='print the raw map')
+parser.add_argument('-u', '--unique', dest='unique', default=False, action='store_true', help='print unique files')
+parser.add_argument('-d', '--duplicate', dest='duplicate', default=False, action='store_true', help='print duplicate files')
+parser.add_argument('path', nargs='+', help='Paths of directories to scan')
+args = parser.parse_args()
+
 allfiles = {}
 unique = 'unique'
-scanfiles(rootDir)
+duplicate = 'duplicate'
+for rootDir in args.path:
+    scanfiles(rootDir)
 
-for file in allfiles:
-    print(file,allfiles[file])
+presentresults(args)
 
