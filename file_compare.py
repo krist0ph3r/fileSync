@@ -5,8 +5,19 @@ import hashlib
 import argparse
 from pathlib import Path
 
+scancount = 0
+hashcount = 0
+
+def counts(sc=False,hc=False,forceprint=False):
+    if sc:
+        if forceprint or sc % 117 == 0: sys.stderr.write('%d files scanned\n' % sc)
+    if hc:
+        hashcount = hc
+        if forceprint or hc % 47 == 0: sys.stderr.write('%d files hashed\n' % hc)
 
 def addhashcode(size):
+    hashcount = hashcount + 1
+    print(scancount,hashcount)
     if unique in allfiles[size]:
         filename = allfiles[size][unique]
         content = Path(filename[0]).read_bytes()
@@ -20,8 +31,10 @@ def addhashcode(size):
             allfiles[size][hash].append(filename[0])
         else:
             allfiles[size][hash] = filename
+        counts(hc=hashcount)
 
 def addfile(filename, size):
+    scancount = scancount + 1
     if size in allfiles:
         addhashcode(size)
         allfiles[size][unique] = [filename]
@@ -29,6 +42,7 @@ def addfile(filename, size):
     else:
         allfiles[size] = {}
         allfiles[size][unique]=[filename]
+    counts(sc=scancount)
 
 def scanfiles(dir):
     for dirName, subdirList, fileList in os.walk(dir):
@@ -38,6 +52,8 @@ def scanfiles(dir):
             addfile(fullpath,size)
 
 def presentresults(args):
+    print(scancount,hashcount)
+    counts(scancount,hashcount,True)
     for size in allfiles:
         for hash in allfiles[size]:
             if len(allfiles[size][hash]) > 1:
@@ -59,8 +75,8 @@ args = parser.parse_args()
 allfiles = {}
 unique = 'unique'
 duplicate = 'duplicate'
+
 for rootDir in args.path:
     scanfiles(rootDir)
-
 presentresults(args)
 
