@@ -4,6 +4,7 @@ import json
 import os
 import hashlib
 import argparse
+import socket
 from pathlib import Path
 
 def counts(sc=False,hc=False,forceprint=False):
@@ -61,7 +62,6 @@ def presentresults(args):
         for file in allfiles:
             print(file,allfiles[file])
 
-
 parser = argparse.ArgumentParser(description='Scan directories for duplicates and unique files', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-m', '--map', dest='map', default=False, action='store_true', help='print the raw map')
 parser.add_argument('-u', '--unique', dest='unique', default=False, action='store_true', help='print unique files')
@@ -69,27 +69,31 @@ parser.add_argument('-d', '--duplicate', dest='duplicate', default=False, action
 parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true', help='verbose mode')
 parser.add_argument('-l', '--load', dest='load', action='store', nargs='1', default = '', help='preload the map from a file')
 parser.add_argument('-s', '--save', dest='save', action='store', nargs='1', default = '', help='save the generated map to a file')
+parser.add_argument('-p', '--prefix', dest='prefix', action='store', nargs='1', default = socket.gethostname(), help='use prefix to designate current machine (default = hostname)')
 parser.add_argument('path', nargs='+', help='Paths of directories to scan')
 args = parser.parse_args()
 
 scancount = 0
 hashcount = 0
-allfiles = {}
 unique = 'unique'
 duplicate = 'duplicate'
+
 allfiles = {}
 loadflag = args.load != ''
 saveflag = args.save != ''
-
-if loadflag or saveflag:
-    prefix = '' #computername
+prefix = args.prefix if loadflag or saveflag else ''
 
 if loadflag:
-    with open(args.load) as json_file:
-        allfiles = json.load(json_file)
+    print('loading from: %s' % args.load)
+    #with open(args.load) as json_file:
+    #    allfiles = json.load(json_file)
+
+print('using prefix: %s' % prefix)
 
 for rootDir in args.path:
     scanfiles(rootDir)
 
 presentresults(args)
 
+if saveflag:
+    print('saving to: %s' % args.save)
