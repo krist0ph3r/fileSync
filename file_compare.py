@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys
+import json
 import os
 import hashlib
 import argparse
@@ -66,6 +67,8 @@ parser.add_argument('-m', '--map', dest='map', default=False, action='store_true
 parser.add_argument('-u', '--unique', dest='unique', default=False, action='store_true', help='print unique files')
 parser.add_argument('-d', '--duplicate', dest='duplicate', default=False, action='store_true', help='print duplicate files')
 parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true', help='verbose mode')
+parser.add_argument('-l', '--load', dest='load', action='store', nargs='1', default = '', help='preload the map from a file')
+parser.add_argument('-s', '--save', dest='save', action='store', nargs='1', default = '', help='save the generated map to a file')
 parser.add_argument('path', nargs='+', help='Paths of directories to scan')
 args = parser.parse_args()
 
@@ -74,8 +77,19 @@ hashcount = 0
 allfiles = {}
 unique = 'unique'
 duplicate = 'duplicate'
+allfiles = {}
+loadflag = args.load != ''
+saveflag = args.save != ''
+
+if loadflag or saveflag:
+    prefix = '' #computername
+
+if loadflag:
+    with open(args.load) as json_file:
+        allfiles = json.load(json_file)
 
 for rootDir in args.path:
     scanfiles(rootDir)
+
 presentresults(args)
 
