@@ -69,7 +69,7 @@ parser.add_argument('-d', '--duplicate', dest='duplicate', default=False, action
 parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true', help='verbose mode')
 parser.add_argument('-l', '--load', dest='load', action='store', nargs=1, default='', help='preload the map from a file')
 parser.add_argument('-s', '--save', dest='save', action='store', nargs=1, default='', help='save the generated map to a file')
-parser.add_argument('-p', '--prefix', dest='prefix', action='store', nargs=1, default=socket.gethostname(), help='use prefix to designate current machine (default = hostname)')
+parser.add_argument('-p', '--prefix', dest='prefix', action='store', nargs=1, default=[socket.gethostname()], help='use prefix to designate current machine (default = hostname)')
 parser.add_argument('path', nargs='+', help='Paths of directories to scan')
 args = parser.parse_args()
 
