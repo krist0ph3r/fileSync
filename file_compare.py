@@ -5,19 +5,17 @@ import hashlib
 import argparse
 from pathlib import Path
 
-scancount = 0
-hashcount = 0
-
 def counts(sc=False,hc=False,forceprint=False):
+    global scancount
+    global hashcount
     if sc:
-        if forceprint or sc % 117 == 0: sys.stderr.write('%d files scanned\n' % sc)
+        scancount = scancount + 1
     if hc:
-        hashcount = hc
-        if forceprint or hc % 47 == 0: sys.stderr.write('%d files hashed\n' % hc)
+        hashcount = hashcount + 1
+    if forceprint or (args.verbose and sc and scancount % 117 == 0):sys.stderr.write('%d files scanned\n' % scancount)
+    if forceprint or (args.verbose and hc and hashcount % 47 == 0):sys.stderr.write('%d files hashed\n' % hashcount)
 
 def addhashcode(size):
-    hashcount = hashcount + 1
-    print(scancount,hashcount)
     if unique in allfiles[size]:
         filename = allfiles[size][unique]
         content = Path(filename[0]).read_bytes()
@@ -31,10 +29,9 @@ def addhashcode(size):
             allfiles[size][hash].append(filename[0])
         else:
             allfiles[size][hash] = filename
-        counts(hc=hashcount)
+        counts(hc=True)
 
 def addfile(filename, size):
-    scancount = scancount + 1
     if size in allfiles:
         addhashcode(size)
         allfiles[size][unique] = [filename]
@@ -42,7 +39,7 @@ def addfile(filename, size):
     else:
         allfiles[size] = {}
         allfiles[size][unique]=[filename]
-    counts(sc=scancount)
+    counts(sc=True)
 
 def scanfiles(dir):
     for dirName, subdirList, fileList in os.walk(dir):
@@ -52,8 +49,7 @@ def scanfiles(dir):
             addfile(fullpath,size)
 
 def presentresults(args):
-    print(scancount,hashcount)
-    counts(scancount,hashcount,True)
+    counts(forceprint=True)
     for size in allfiles:
         for hash in allfiles[size]:
             if len(allfiles[size][hash]) > 1:
@@ -69,9 +65,12 @@ parser = argparse.ArgumentParser(description='Scan directories for duplicates an
 parser.add_argument('-m', '--map', dest='map', default=False, action='store_true', help='print the raw map')
 parser.add_argument('-u', '--unique', dest='unique', default=False, action='store_true', help='print unique files')
 parser.add_argument('-d', '--duplicate', dest='duplicate', default=False, action='store_true', help='print duplicate files')
+parser.add_argument('-v', '--verbose', dest='verbose', default=False, action='store_true', help='verbose mode')
 parser.add_argument('path', nargs='+', help='Paths of directories to scan')
 args = parser.parse_args()
 
+scancount = 0
+hashcount = 0
 allfiles = {}
 unique = 'unique'
 duplicate = 'duplicate'
